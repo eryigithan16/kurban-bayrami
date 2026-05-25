@@ -55,24 +55,26 @@ body {
 
 .sticker {
   position: absolute;
-  width: clamp(110px, 26vw, 170px);
+  width: clamp(78px, 18vw, 130px);
   height: auto;
-  opacity: 0.85;
+  max-height: 26vh;
+  object-fit: contain;
+  opacity: 0.38;
   filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.45));
   border-radius: 18px;
-  mix-blend-mode: screen;
+  mix-blend-mode: soft-light;
 }
 
 .sticker.left {
   left: max(10px, env(safe-area-inset-left));
-  top: 52%;
-  transform: translateY(-50%) rotate(-10deg);
+  top: 18%;
+  transform: rotate(-12deg);
 }
 
 .sticker.right {
   right: max(10px, env(safe-area-inset-right));
-  top: 48%;
-  transform: translateY(-50%) rotate(10deg);
+  top: 72%;
+  transform: rotate(12deg);
 }
 
 .wrap {
@@ -229,18 +231,25 @@ body {
 
 @media (max-width: 420px) {
   .sticker {
-    opacity: 0.75;
-    width: clamp(96px, 34vw, 140px);
+    opacity: 0.28;
+    width: clamp(68px, 22vw, 108px);
+    max-height: 20vh;
   }
   .sticker.left {
     left: max(8px, env(safe-area-inset-left));
-    top: 56%;
-    transform: translateY(-50%) rotate(-8deg);
+    top: 16%;
+    transform: rotate(-10deg);
   }
   .sticker.right {
     right: max(8px, env(safe-area-inset-right));
-    top: 44%;
-    transform: translateY(-50%) rotate(8deg);
+    top: 76%;
+    transform: rotate(10deg);
+  }
+}
+
+@media (max-width: 360px) {
+  .sticker {
+    display: none;
   }
 }
 
