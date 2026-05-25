@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#ff4d7d" />
+    <meta
+      name="description"
+      content="Kurban Bayramın kutlu olsun — küçük bir sürpriz."
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Kurban Bayramın kutlu olsun" />
+    <meta
+      property="og:description"
+      content="Küçük bir sürpriz hazırladım."
+    />
+
+    <title>Kurban Bayramın kutlu olsun</title>
+
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" href="data:," />
+  </head>
+  <body>
+    <canvas id="fx" aria-hidden="true"></canvas>
+
+    <main class="wrap">
+      <header class="top">
+        <div class="badge" id="badge" aria-label="Sürpriz">💝</div>
+        <div class="titles">
+          <p class="kicker" id="kicker">Bugün senin için</p>
+          <h1 class="title" id="title">Kurban Bayramın kutlu olsun</h1>
+          <p class="sub" id="sub">
+            İyi ki varsın. Gülüşün hep içimi ısıtıyor.
+          </p>
+        </div>
+      </header>
+
+      <section class="card" aria-label="Mesaj">
+        <p class="message" id="message">
+          Bu bayram; sağlık, huzur, bereket ve bol kahkaha getirsin.
+          <span class="hl">Seni çok seviyorum.</span>
+        </p>
+
+        <div class="chips" id="chips" aria-label="Kısa notlar">
+          <button class="chip" type="button" data-chip="Birlikte nice bayramlara">
+            Birlikte nice bayramlara
+          </button>
+          <button class="chip" type="button" data-chip="Gözlerinden öpüyorum">
+            Gözlerinden öpüyorum
+          </button>
+          <button class="chip" type="button" data-chip="Hep yanındayım">
+            Hep yanındayım
+          </button>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" type="button" id="btnPlay">
+            Sürprizi başlat
+          </button>
+          <button class="btn" type="button" id="btnShare">
+            Linki paylaş
+          </button>
+        </div>
+
+        <p class="hint" id="hint">
+          İpucu: Bir kere dokun; sonra ekrana dokundukça renkler yağsın.
+        </p>
+      </section>
+
+      <footer class="foot">
+        <p class="sig">
+          <span id="signaturePrefix">—</span>
+          <span id="signatureName">Senin için</span>
+        </p>
+      </footer>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
+
