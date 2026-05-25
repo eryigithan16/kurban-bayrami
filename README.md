@@ -1,3 +1,0 @@
-# Bayram Sürprizi (GitHub Pages)
-
-

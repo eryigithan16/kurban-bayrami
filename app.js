@@ -1,10 +1,9 @@
 const CONFIG = {
   // Burayı kişiselleştir:
-  herName: "Aşkım",
-  fromName: "Ben",
-  kicker: "Bugün senin için",
-  title: "Kurban Bayramın kutlu olsun",
-  subtitle: "İyi ki varsın. Gülüşün hep içimi ısıtıyor.",
+  herName: "Melikem",
+  fromName: "Canikon Yiğithannn",
+  title: "Kurban Bayramın kutlu olsunnnnn",
+  subtitle: "İyi ki varsınn birrrrtanem gülüşün içimi ısıtıyorrrr.",
   message:
     "Bu bayram; sağlık, huzur, bereket ve bol kahkaha getirsin. Seni çok seviyorum.",
 };
@@ -19,8 +18,66 @@ function showToast(text) {
   showToast._t = setTimeout(() => toastEl.classList.remove("show"), 1400);
 }
 
+// Audio (moo)
+let mooAudio = null;
+let audioUnlocked = false;
+let mooTimer = null;
+let mooLoopStarted = false;
+let lastMooAt = 0;
+
+function initMooAudio() {
+  if (mooAudio) return mooAudio;
+  mooAudio = new Audio();
+  mooAudio.preload = "auto";
+  mooAudio.volume = 0.28;
+  // Tercih sırası: mp3, sonra ogg
+  mooAudio.src = "assets/moo.mp3";
+  mooAudio.addEventListener("error", () => {
+    // fallback
+    mooAudio.src = "assets/moo.ogg";
+  });
+  return mooAudio;
+}
+
+async function unlockAudioOnce() {
+  if (audioUnlocked) return;
+  const a = initMooAudio();
+  try {
+    // iOS/Safari: ilk etkileşimde kısa bir play/pause ile unlock
+    await a.play();
+    a.pause();
+    a.currentTime = 0;
+    audioUnlocked = true;
+  } catch {
+    // Kullanıcı ayarları/OS kısıtları nedeniyle unlock olmayabilir; sessizce geç
+  }
+}
+
+async function playMoo() {
+  const now = Date.now();
+  if (now - lastMooAt < 900) return; // spam önle
+  lastMooAt = now;
+  const a = initMooAudio();
+  try {
+    a.currentTime = 0;
+    await a.play();
+    setBubble("mööö 🐮");
+  } catch {
+    // sessizce geç
+  }
+}
+
+function scheduleRandomMoo() {
+  clearTimeout(mooTimer);
+  // 4–9 saniye arası rastgele (daha sık/çabuk)
+  const delay = Math.floor(rand(4_000, 9_000));
+  mooTimer = setTimeout(async () => {
+    await playMoo();
+    scheduleRandomMoo();
+  }, delay);
+}
+
 function setText() {
-  $("#kicker").textContent = CONFIG.kicker;
   $("#title").textContent = `${CONFIG.title}, ${CONFIG.herName}`;
   $("#sub").textContent = CONFIG.subtitle;
   $("#message").innerHTML = `${escapeHtml(CONFIG.message).replace(
@@ -117,6 +174,15 @@ const particles = [];
 let running = false;
 let lastT = 0;
 
+function setBubble(text) {
+  const el = $("#bubble");
+  if (!el) return;
+  el.textContent = text;
+  el.classList.remove("pop");
+  void el.offsetWidth;
+  el.classList.add("pop");
+}
+
 function spawnBurst(x, y, amount = 22) {
   const base = Math.max(10, Math.min(22, Math.round(Math.min(w, h) / 38)));
   for (let i = 0; i < amount; i++) {
@@ -192,53 +258,36 @@ function tick(now) {
 }
 
 function bindUi() {
-  $("#btnPlay").addEventListener("click", () => {
-    const x = w * 0.5;
-    const y = h * 0.35;
-    spawnBurst(x, y, 44);
-    showToast("Sürpriz başladı ✨");
-  });
-
-  $("#btnShare").addEventListener("click", async () => {
-    const url = window.location.href;
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: document.title,
-          text: "Küçük bir sürpriz 💝",
-          url,
-        });
-        return;
-      }
-    } catch {
-      // ignore and fallback to clipboard
-    }
-
-    try {
-      await navigator.clipboard.writeText(url);
-      showToast("Link kopyalandı");
-    } catch {
-      showToast("Linki kopyalayamadım");
-    }
-  });
-
-  $("#chips").addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-chip]");
-    if (!btn) return;
-    const text = btn.getAttribute("data-chip");
-    $("#message").innerHTML = `${escapeHtml(text)} <span class="hl">${escapeHtml(
-      CONFIG.herName,
-    )}</span>`;
-    spawnBurst(rand(w * 0.25, w * 0.75), rand(h * 0.22, h * 0.55), 22);
-  });
-
   const onTap = (ev) => {
     const p = ("touches" in ev && ev.touches[0]) || ev;
     spawnBurst(p.clientX, p.clientY, 18);
+    unlockAudioOnce().then(async () => {
+      if (!audioUnlocked) return;
+      if (!mooLoopStarted) {
+        mooLoopStarted = true;
+        await playMoo(); // ilk dokunuşta hızlıca möö
+        scheduleRandomMoo();
+      }
+    });
   };
   window.addEventListener("pointerdown", onTap, { passive: true });
+
+  const cow = document.querySelector(".cow");
+  if (cow) {
+    cow.addEventListener(
+      "click",
+      () => {
+        setBubble("möö 🐮💗");
+        spawnBurst(rand(w * 0.35, w * 0.65), rand(h * 0.18, h * 0.5), 36);
+      },
+      { passive: true },
+    );
+  }
 }
 
 setText();
 bindUi();
 
+setTimeout(() => {
+  spawnBurst(w * 0.5, h * 0.28, 24);
+}, 250);
