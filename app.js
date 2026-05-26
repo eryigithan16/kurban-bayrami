@@ -106,77 +106,12 @@ function escapeHtml(s) {
   });
 }
 
-// Lightweight confetti / hearts
-const canvas = $("#fx");
-const ctx = canvas.getContext("2d", { alpha: true });
-const isCoarse = window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
-let dpr = Math.max(1, Math.min(isCoarse ? 1.25 : 2, window.devicePixelRatio || 1));
-let w = 0;
-let h = 0;
-
-function resize() {
-  w = Math.floor(window.innerWidth);
-  h = Math.floor(window.innerHeight);
-  canvas.width = Math.floor(w * dpr);
-  canvas.height = Math.floor(h * dpr);
-  canvas.style.width = `${w}px`;
-  canvas.style.height = `${h}px`;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-}
-
-window.addEventListener("resize", resize, { passive: true });
-resize();
-
-const palette = [
-  "#ff4d7d",
-  "#ff7aa2",
-  "#ffcc66",
-  "#7c4dff",
-  "#30d0ff",
-  "#7dffb2",
-  "#ffffff",
-];
-
 function rand(min, max) {
   return min + Math.random() * (max - min);
 }
 
-function pick(arr) {
-  return arr[(Math.random() * arr.length) | 0];
-}
-
-function heartPath(x, y, size) {
-  // Simple heart using bezier curves (relative)
-  const s = size;
-  ctx.beginPath();
-  ctx.moveTo(x, y + s * 0.35);
-  ctx.bezierCurveTo(x, y, x - s * 0.5, y, x - s * 0.5, y + s * 0.35);
-  ctx.bezierCurveTo(
-    x - s * 0.5,
-    y + s * 0.7,
-    x,
-    y + s * 0.9,
-    x,
-    y + s * 1.1,
-  );
-  ctx.bezierCurveTo(
-    x,
-    y + s * 0.9,
-    x + s * 0.5,
-    y + s * 0.7,
-    x + s * 0.5,
-    y + s * 0.35,
-  );
-  ctx.bezierCurveTo(x + s * 0.5, y, x, y, x, y + s * 0.35);
-  ctx.closePath();
-}
-
-const particles = [];
-let running = false;
-let lastT = 0;
-let lastTapAt = 0;
-const MAX_PARTICLES = isCoarse ? 50 : 220;
-let lastDrawAt = 0;
+// Lightweight confetti / hearts
+// (kaldırıldı) tıklama/kalp animasyonu performans için kapatıldı
 
 function setBubble(text) {
   const el = $("#bubble");
@@ -187,115 +122,18 @@ function setBubble(text) {
   el.classList.add("pop");
 }
 
-function spawnBurst(x, y, amount = 22) {
-  // cap particle count to keep low-end phones smooth
-  if (particles.length > MAX_PARTICLES) {
-    particles.splice(0, particles.length - MAX_PARTICLES);
-  }
-  const base = Math.max(10, Math.min(22, Math.round(Math.min(w, h) / 38)));
-  for (let i = 0; i < amount; i++) {
-    const isHeart = !isCoarse && Math.random() < 0.45;
-    particles.push({
-      x,
-      y,
-      vx: rand(-220, 220),
-      vy: rand(-360, -120),
-      g: rand(520, 820),
-      rot: rand(-2.5, 2.5),
-      vr: rand(-7, 7),
-      size: rand(base * 0.55, base * 1.25),
-      color: pick(palette),
-      alpha: 1,
-      life: rand(isCoarse ? 0.6 : 0.9, isCoarse ? 1.0 : 1.5),
-      t: 0,
-      kind: isHeart ? "heart" : isCoarse ? "dot" : "rect",
-    });
-  }
-  if (!running) start();
-}
-
-function start() {
-  running = true;
-  lastT = performance.now();
-  requestAnimationFrame(tick);
-}
-
-function stopIfDone() {
-  if (particles.length === 0) running = false;
-}
-
-function tick(now) {
-  if (!running) return;
-  if (isCoarse) {
-    // 30fps cap for smoother low-end phones
-    if (now - lastDrawAt < 33) {
-      requestAnimationFrame(tick);
-      return;
-    }
-    lastDrawAt = now;
-  }
-  const dt = Math.min(0.033, (now - lastT) / 1000);
-  lastT = now;
-
-  ctx.clearRect(0, 0, w, h);
-
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i];
-    p.t += dt;
-    p.vy += p.g * dt;
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-    p.rot += p.vr * dt;
-
-    const k = p.t / p.life;
-    p.alpha = Math.max(0, 1 - k * k);
-
-    ctx.save();
-    ctx.globalAlpha = p.alpha;
-    ctx.translate(p.x, p.y);
-    ctx.rotate(p.rot);
-    ctx.fillStyle = p.color;
-
-    if (p.kind === "heart") {
-      heartPath(0, 0, p.size);
-      ctx.fill();
-    } else if (p.kind === "dot") {
-      ctx.beginPath();
-      ctx.arc(0, 0, p.size * 0.35, 0, Math.PI * 2);
-      ctx.fill();
-    } else {
-      ctx.fillRect(-p.size * 0.5, -p.size * 0.35, p.size, p.size * 0.7);
-    }
-    ctx.restore();
-
-    if (p.t >= p.life || p.y > h + 80 || p.x < -80 || p.x > w + 80) {
-      particles.splice(i, 1);
-    }
-  }
-
-  stopIfDone();
-  if (running) requestAnimationFrame(tick);
-}
-
 function bindUi() {
-  const onTap = (ev) => {
-    const now = performance.now();
-    if (now - lastTapAt < (isCoarse ? 90 : 45)) return;
-    lastTapAt = now;
-    const p = ("touches" in ev && ev.touches[0]) || ev;
-    // Mobile: keep it very light
-    spawnBurst(p.clientX, p.clientY, isCoarse ? 5 : 18);
-    unlockAudioOnce().then(async () => {
+  const onFirstTap = () => {
+    unlockAudioOnce().then(() => {
       if (!audioUnlocked) return;
-      if (!mooLoopStarted) {
-        mooLoopStarted = true;
-        // Ses bazı cihazlarda kısa süre "takılma" yaratabiliyor; animasyondan sonra tetikle
-        setTimeout(() => void playMoo(), 120);
-        scheduleRandomMoo();
-      }
+      if (mooLoopStarted) return;
+      mooLoopStarted = true;
+      setTimeout(() => void playMoo(), 80);
+      scheduleRandomMoo();
     });
+    window.removeEventListener("pointerdown", onFirstTap);
   };
-  window.addEventListener("pointerdown", onTap, { passive: true });
+  window.addEventListener("pointerdown", onFirstTap, { passive: true });
 
   const cow = document.querySelector(".cow");
   if (cow) {
@@ -303,7 +141,7 @@ function bindUi() {
       "click",
       () => {
         setBubble("möö 🐮💗");
-        spawnBurst(rand(w * 0.35, w * 0.65), rand(h * 0.18, h * 0.5), 36);
+        void playMoo();
       },
       { passive: true },
     );
@@ -312,7 +150,3 @@ function bindUi() {
 
 setText();
 bindUi();
-
-setTimeout(() => {
-  spawnBurst(w * 0.5, h * 0.28, 24);
-}, 250);
