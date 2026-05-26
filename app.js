@@ -1,9 +1,9 @@
 const CONFIG = {
   // Burayı kişiselleştir:
-  herName: "Melikem",
-  fromName: "Canikon Yiğithannn",
-  title: "Kurban Bayramın kutlu olsunnnnn",
-  subtitle: "İyi ki varsınn birrrrtanem gülüşün içimi ısıtıyorrrr.",
+  herName: "Melikemm",
+  fromName: "Canikon",
+  title: "Kurban Bayramın kutlu olsun",
+  subtitle: "Birlikte nice ve birlikte de geçireceğimiz bayramlara <3",
   message:
     "Bu bayram; sağlık, huzur, bereket ve bol kahkaha getirsin. Seni çok seviyorum.",
 };
