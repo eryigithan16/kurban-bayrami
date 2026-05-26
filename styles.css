@@ -237,13 +237,19 @@ body {
   }
   .sticker.left {
     left: max(8px, env(safe-area-inset-left));
-    top: 16%;
+    top: 30%;
     transform: rotate(-10deg);
   }
   .sticker.right {
     right: max(8px, env(safe-area-inset-right));
     top: 76%;
     transform: rotate(10deg);
+  }
+}
+
+@media (max-height: 720px) and (max-width: 520px) {
+  .sticker.left {
+    top: 34%;
   }
 }
 

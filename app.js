@@ -109,7 +109,8 @@ function escapeHtml(s) {
 // Lightweight confetti / hearts
 const canvas = $("#fx");
 const ctx = canvas.getContext("2d", { alpha: true });
-let dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+const isCoarse = window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
+let dpr = Math.max(1, Math.min(isCoarse ? 1.5 : 2, window.devicePixelRatio || 1));
 let w = 0;
 let h = 0;
 
@@ -173,6 +174,8 @@ function heartPath(x, y, size) {
 const particles = [];
 let running = false;
 let lastT = 0;
+let lastTapAt = 0;
+const MAX_PARTICLES = isCoarse ? 140 : 220;
 
 function setBubble(text) {
   const el = $("#bubble");
@@ -184,6 +187,10 @@ function setBubble(text) {
 }
 
 function spawnBurst(x, y, amount = 22) {
+  // cap particle count to keep low-end phones smooth
+  if (particles.length > MAX_PARTICLES) {
+    particles.splice(0, particles.length - MAX_PARTICLES);
+  }
   const base = Math.max(10, Math.min(22, Math.round(Math.min(w, h) / 38)));
   for (let i = 0; i < amount; i++) {
     const isHeart = Math.random() < 0.45;
@@ -259,8 +266,11 @@ function tick(now) {
 
 function bindUi() {
   const onTap = (ev) => {
+    const now = performance.now();
+    if (now - lastTapAt < (isCoarse ? 90 : 45)) return;
+    lastTapAt = now;
     const p = ("touches" in ev && ev.touches[0]) || ev;
-    spawnBurst(p.clientX, p.clientY, 18);
+    spawnBurst(p.clientX, p.clientY, isCoarse ? 12 : 18);
     unlockAudioOnce().then(async () => {
       if (!audioUnlocked) return;
       if (!mooLoopStarted) {
