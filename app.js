@@ -175,7 +175,8 @@ const particles = [];
 let running = false;
 let lastT = 0;
 let lastTapAt = 0;
-const MAX_PARTICLES = isCoarse ? 80 : 220;
+const MAX_PARTICLES = isCoarse ? 50 : 220;
+let lastDrawAt = 0;
 
 function setBubble(text) {
   const el = $("#bubble");
@@ -225,6 +226,14 @@ function stopIfDone() {
 
 function tick(now) {
   if (!running) return;
+  if (isCoarse) {
+    // 30fps cap for smoother low-end phones
+    if (now - lastDrawAt < 33) {
+      requestAnimationFrame(tick);
+      return;
+    }
+    lastDrawAt = now;
+  }
   const dt = Math.min(0.033, (now - lastT) / 1000);
   lastT = now;
 
@@ -274,7 +283,8 @@ function bindUi() {
     if (now - lastTapAt < (isCoarse ? 90 : 45)) return;
     lastTapAt = now;
     const p = ("touches" in ev && ev.touches[0]) || ev;
-    spawnBurst(p.clientX, p.clientY, isCoarse ? 8 : 18);
+    // Mobile: keep it very light
+    spawnBurst(p.clientX, p.clientY, isCoarse ? 5 : 18);
     unlockAudioOnce().then(async () => {
       if (!audioUnlocked) return;
       if (!mooLoopStarted) {

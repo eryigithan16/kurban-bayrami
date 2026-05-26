@@ -59,10 +59,10 @@ body {
   height: auto;
   max-height: 26vh;
   object-fit: contain;
-  opacity: 0.9;
+  opacity: 1;
   filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.45));
   border-radius: 18px;
-  mix-blend-mode: soft-light;
+  mix-blend-mode: normal;
 }
 
 .sticker.left {
@@ -231,7 +231,7 @@ body {
 
 @media (max-width: 420px) {
   .sticker {
-    opacity: 0.9;
+    opacity: 1;
     width: clamp(68px, 22vw, 108px);
     max-height: 20vh;
   }
