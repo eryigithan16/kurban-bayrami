@@ -110,7 +110,7 @@ function escapeHtml(s) {
 const canvas = $("#fx");
 const ctx = canvas.getContext("2d", { alpha: true });
 const isCoarse = window.matchMedia?.("(pointer: coarse)")?.matches ?? false;
-let dpr = Math.max(1, Math.min(isCoarse ? 1.5 : 2, window.devicePixelRatio || 1));
+let dpr = Math.max(1, Math.min(isCoarse ? 1.25 : 2, window.devicePixelRatio || 1));
 let w = 0;
 let h = 0;
 
@@ -175,7 +175,7 @@ const particles = [];
 let running = false;
 let lastT = 0;
 let lastTapAt = 0;
-const MAX_PARTICLES = isCoarse ? 140 : 220;
+const MAX_PARTICLES = isCoarse ? 80 : 220;
 
 function setBubble(text) {
   const el = $("#bubble");
@@ -193,7 +193,7 @@ function spawnBurst(x, y, amount = 22) {
   }
   const base = Math.max(10, Math.min(22, Math.round(Math.min(w, h) / 38)));
   for (let i = 0; i < amount; i++) {
-    const isHeart = Math.random() < 0.45;
+    const isHeart = !isCoarse && Math.random() < 0.45;
     particles.push({
       x,
       y,
@@ -205,9 +205,9 @@ function spawnBurst(x, y, amount = 22) {
       size: rand(base * 0.55, base * 1.25),
       color: pick(palette),
       alpha: 1,
-      life: rand(0.9, 1.5),
+      life: rand(isCoarse ? 0.6 : 0.9, isCoarse ? 1.0 : 1.5),
       t: 0,
-      kind: isHeart ? "heart" : "rect",
+      kind: isHeart ? "heart" : isCoarse ? "dot" : "rect",
     });
   }
   if (!running) start();
@@ -250,6 +250,10 @@ function tick(now) {
     if (p.kind === "heart") {
       heartPath(0, 0, p.size);
       ctx.fill();
+    } else if (p.kind === "dot") {
+      ctx.beginPath();
+      ctx.arc(0, 0, p.size * 0.35, 0, Math.PI * 2);
+      ctx.fill();
     } else {
       ctx.fillRect(-p.size * 0.5, -p.size * 0.35, p.size, p.size * 0.7);
     }
@@ -270,12 +274,13 @@ function bindUi() {
     if (now - lastTapAt < (isCoarse ? 90 : 45)) return;
     lastTapAt = now;
     const p = ("touches" in ev && ev.touches[0]) || ev;
-    spawnBurst(p.clientX, p.clientY, isCoarse ? 12 : 18);
+    spawnBurst(p.clientX, p.clientY, isCoarse ? 8 : 18);
     unlockAudioOnce().then(async () => {
       if (!audioUnlocked) return;
       if (!mooLoopStarted) {
         mooLoopStarted = true;
-        await playMoo(); // ilk dokunuşta hızlıca möö
+        // Ses bazı cihazlarda kısa süre "takılma" yaratabiliyor; animasyondan sonra tetikle
+        setTimeout(() => void playMoo(), 120);
         scheduleRandomMoo();
       }
     });
